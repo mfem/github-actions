@@ -31,7 +31,14 @@ inputs:
     description: 'hypre install location working dir'
     required: true
   metis-dir:
-    description: 'hypre install location working dir'
+    description: 'metis install location working dir'
+    required: true
+  mfem-repo:
+    description: 'Repo url for MFEM'
+    required: false
+    default: 'https://github.com/mfem/mfem.git'
+  mfem-branch:
+    description: 'Branch to checkout'
     required: true
   mfem-dir:
     description: 'mfem repo checkout location in working dir'
@@ -46,6 +53,18 @@ runs:
   steps:
     - name: configure mfem
       run: |
+        echo "--- Download source code ---"
+        if [[ -n ${{ inputs.mfem-branch }} ]]; then
+          if [[ -d ${{ inputs.mfem-dir }} ]]; then
+            echo "Error: Unknown use case"
+            echo " Trying to change MFEM branch while MFEM is already present."
+            echo " The use case supported are:"
+            echo "  - MFEM CI: Use MFEM source checked out by Github."
+            echo "  - MiniApp CI: Clone MFEM using a specific branch."
+            exit 1;
+          fi
+          git clone --single-branch --branch ${{ inputs.mfem-branch }} --depth 1 ${{ inputs.mfem-repo }} ${{ inputs.mfem-dir }};
+        fi
         echo "--- Prepare Configuration ---"
         MPI="NO"
         if [[ ${{ inputs.mpi }} == 'parallel' ]]; then
