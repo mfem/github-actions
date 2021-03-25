@@ -39,7 +39,8 @@ inputs:
     default: 'https://github.com/mfem/mfem.git'
   mfem-branch:
     description: 'Branch to checkout'
-    required: true
+    required: false
+    default: master
   mfem-dir:
     description: 'mfem repo checkout location in working dir'
     required: true
