@@ -40,6 +40,7 @@ inputs:
   mfem-branch:
     description: 'Branch to checkout'
     required: false
+    default: ''
   mfem-dir:
     description: 'mfem repo checkout location in working dir'
     required: true
