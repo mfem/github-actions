@@ -55,7 +55,7 @@ runs:
     - name: configure mfem
       run: |
         echo "--- Download source code ---"
-        if [[ -n ${{ inputs.mfem-branch }} ]]; then
+        if [[ -n "${{ inputs.mfem-branch }}" ]]; then
           if [[ -d ${{ inputs.mfem-dir }} ]]; then
             echo "Error: Unknown use case"
             echo " Trying to change MFEM branch while MFEM is already present."
