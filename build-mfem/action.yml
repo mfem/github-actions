@@ -71,9 +71,9 @@ runs:
         if [[ ${{ inputs.mpi }} == 'parallel' ]]; then
           MPI="YES"
           echo "Hypre symlink:"
-          ln -s ${{ inputs.hypre-dir }} hypre;
+          ln -s -f ${{ inputs.hypre-dir }} hypre;
           echo "Metis symlink:"
-          ln -s ${{ inputs.metis-dir }} metis-4.0;
+          ln -s -f ${{ inputs.metis-dir }} metis-4.0;
         fi
         CPPFLAGS="";
         DEBUG="NO";
