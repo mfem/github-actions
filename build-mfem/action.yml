@@ -54,6 +54,7 @@ runs:
   steps:
     - name: configure mfem
       run: |
+        echo "----------------------------"
         echo "--- Download source code ---"
         if [[ -n "${{ inputs.mfem-branch }}" ]]; then
           if [[ -d ${{ inputs.mfem-dir }} ]]; then
@@ -65,32 +66,46 @@ runs:
             exit 1;
           fi
           git clone --single-branch --branch ${{ inputs.mfem-branch }} --depth 1 ${{ inputs.mfem-repo }} ${{ inputs.mfem-dir }};
+          echo "[INFO] MFEM clone: using ${{ inputs.mfem-branch }} branch"
         fi
+        echo "-----------------------------"
         echo "--- Prepare Configuration ---"
         MPI="NO"
         if [[ ${{ inputs.mpi }} == 'parallel' ]]; then
           MPI="YES"
-          echo "Hypre symlink:"
+          echo "[INFO] Hypre symlink: hypre -> ${{ inputs.hypre-dir }}"
           ln -s -f ${{ inputs.hypre-dir }} hypre;
-          echo "Metis symlink:"
+          echo "[INFO] Metis symlink: metis -> ${{ inputs.metis-dir }}"
           ln -s -f ${{ inputs.metis-dir }} metis-4.0;
         fi
+        echo "[STATUS] MPI: ${MPI}"
         CPPFLAGS="";
         DEBUG="NO";
+        BUILD_TYPE="Release"
         if [[ ${{ inputs.target }} == 'debug' ]]; then
           DEBUG="YES";
+          BUILD_TYPE="Debug";
           if [[ ${{ inputs.os }} == 'ubuntu-18.04' ]]; then
             CPPFLAGS+=" -pedantic -Wall -Werror";
           fi
         fi
+        echo "[STATUS] DEBUG: ${DEBUG}"
+        echo "[STATUS] BUILD_TYPE: ${BUILD_TYPE}"
         if [[ ${{ inputs.codecov }} == 'YES' ]]; then
           CPPFLAGS+=" --coverage -fPIC -g";
         fi
+        echo "[STATUS] CPPFLAGS: ${CPPFLAGS}"
+        echo "----------------------"
         echo "--- Configure mfem ---"
         cd ${{ inputs.mfem-dir }};
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
             mkdir build && cd build;
-            cmake .. -DMFEM_USE_MPI=${MPI} -DMFEM_MPI_NP=2 -DHYPRE_DIR=../../hypre/src/hypre
+            cmake \
+              -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+              -D MFEM_USE_MPI=${MPI} \
+              -D MFEM_MPI_NP=2 \
+              -D HYPRE_DIR=../../hypre/src/hypre \
+              ..
         else
             make config MFEM_USE_MPI=${MPI} MFEM_MPI_NP=2 MFEM_DEBUG=${DEBUG} CPPFLAGS="${CPPFLAGS}";
         fi
@@ -98,9 +113,10 @@ runs:
 
     - name: build mfem
       run: |
+        echo "------------------"
         echo "--- Build mfem ---"
         cd ${{ inputs.mfem-dir }}
-        if [[ ${{ inputs.build-system }} == "cmake" ]]; then
+        if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
             cd build
             make -j3 mfem examples
             cd tests/unit
