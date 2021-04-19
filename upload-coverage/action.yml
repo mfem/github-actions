@@ -19,21 +19,26 @@ inputs:
   project_dir:
     description: "Path to the project directory"
     required: true
+  coverage-directories:
+    descripton: "list of directories to look for coverage info"
+    required: true
+
 
 runs:
   using: "composite"
 
   steps:
     - run: |
-        cd ${{ inputs.project_dir }}
-        cov_dirs="${{ inputs.coverage-directories }}"
-        dirs_opts=""
-        if [[ -n "${cov_dirs}" ]];
-        then
+        cd ${{ inputs.project_dir }};
+        cov_dirs="${{ inputs.coverage-directories }}";
+        dirs_opts="";
+        if [[ -n "${cov_dirs}" ]]; then
             for dir in ${cov_dirs}; do dirs_opts+=" --directory=${dir}"; done
-        lcov --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file ${{ inputs.report }}
+        fi
+        lcov --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file lcov.info;
+
         curl -o codecov.sh -f https://codecov.io/bash || \
           curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash
-        bash codecov.sh -n "${{ inputs.name }}"
+          curl -o codecov.sh -f https://codecov.io/bash;
+        bash codecov.sh -n "${{ inputs.name }}" -X gcov;
       shell: bash
