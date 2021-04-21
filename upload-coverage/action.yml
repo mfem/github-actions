@@ -10,7 +10,7 @@
 # CONTRIBUTING.md for details.
 
 name: Upload Coverage
-description: Upload coverage to codecov
+description: Upload coverage to codecov, requires lcov.
 
 inputs:
   name:
@@ -21,7 +21,7 @@ inputs:
     required: true
   coverage-directories:
     descripton: "list of directories to look for coverage info"
-    required: true
+    required: false
 
 
 runs:
