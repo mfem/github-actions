@@ -95,6 +95,7 @@ runs:
         if [[ ${{ inputs.codecov }} == 'YES' ]]; then
           COVERAGE="YES"
         fi
+        echo "[STATUS] COVERAGE: ${COVERAGE}"
         echo "[STATUS] CPPFLAGS: ${CPPFLAGS}"
         echo "----------------------"
         echo "--- Configure mfem ---"
