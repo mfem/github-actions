@@ -91,8 +91,9 @@ runs:
         fi
         echo "[STATUS] DEBUG: ${DEBUG}"
         echo "[STATUS] BUILD_TYPE: ${BUILD_TYPE}"
+        COVERAGE="NO"
         if [[ ${{ inputs.codecov }} == 'YES' ]]; then
-          CPPFLAGS+=" --coverage -fPIC -g";
+          COVERAGE="YES"
         fi
         echo "[STATUS] CPPFLAGS: ${CPPFLAGS}"
         echo "----------------------"
@@ -107,7 +108,7 @@ runs:
               -D HYPRE_DIR=../../hypre/src/hypre \
               ..
         else
-            make config MFEM_USE_MPI=${MPI} MFEM_MPI_NP=2 MFEM_DEBUG=${DEBUG} CPPFLAGS="${CPPFLAGS}";
+            make config MFEM_USE_MPI=${MPI} MFEM_MPI_NP=2 MFEM_DEBUG=${DEBUG} CPPFLAGS="${CPPFLAGS}" MFEM_COVERAGE=${COVERAGE};
         fi
       shell: bash
 
