@@ -118,11 +118,11 @@ runs:
         cd ${{ inputs.mfem-dir }}
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
             cd build
-            make -j mfem examples
+            make -j3 mfem examples
             cd tests/unit
-            make -j
+            make -j3
         else
-            make all -j
+            make all -j3
         fi
       shell: bash
 
