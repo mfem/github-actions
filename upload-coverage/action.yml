@@ -19,8 +19,11 @@ inputs:
   project_dir:
     description: "Path to the project directory"
     required: true
-  coverage-directories:
-    descripton: "list of directories to look for coverage info"
+  directories:
+    descripton: "List of directories to look for coverage info"
+    required: false
+  config_file:
+    description: "Config file to use, otherwise let codecov use codecov.yml"
     required: false
 
 
@@ -30,15 +33,28 @@ runs:
   steps:
     - run: |
         cd ${{ inputs.project_dir }};
-        cov_dirs="${{ inputs.coverage-directories }}";
-        dirs_opts="";
-        if [[ -n "${cov_dirs}" ]]; then
-            for dir in ${cov_dirs}; do dirs_opts+=" --directory=${dir}"; done
+        # Allow user to change codecov config file (and use a hidden one).
+        config_file="${{ inputs.directories }}";
+        if [[ -n "${config_file}" ]]; then
+          cp -f ${config_file} codecov.yml
         fi
+        # Restrict search to directories listed, if any.
+        directory_list="${{ inputs.directories }}";
+        dirs_opts="";
+        if [[ -n "${directory_list}" ]]; then
+          for dir in ${cov_dirs}; do dirs_opts+=" --directory=${dir}"; done
+        fi
+        # Generate the coverage report.
         lcov --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file lcov.info;
-
-        curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash;
+        # Download the coverage export script.
+        curl --silent --output codecov --fail https://codecov.io/bash || \
+          curl -s -o codecov -f https://codecov.io/bash;
+        VERSION=$(grep -o 'VERSION=\"[0-9\.]*\"' codecov | cut -d'"' -f2);
+        for i in 1 256 512
+        do
+          shasum -a $i -c --ignore-missing <(curl -s "https://raw.githubusercontent.com/codecov/codecov-bash/${VERSION}/SHA${i}SUM") || \
+          shasum -a $i -c <(curl -s "https://raw.githubusercontent.com/codecov/codecov-bash/${VERSION}/SHA${i}SUM")
+        done
+        # Effectively export the coverage report.
         bash codecov.sh -n "${{ inputs.name }}" -X gcov;
       shell: bash
