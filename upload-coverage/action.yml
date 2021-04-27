@@ -34,7 +34,7 @@ runs:
     - run: |
         cd ${{ inputs.project_dir }};
         # Allow user to change codecov config file (and use a hidden one).
-        config_file="${{ inputs.directories }}";
+        config_file="${{ inputs.config_file }}";
         if [[ -n "${config_file}" ]]; then
           cp -f ${config_file} codecov.yml
         fi
