@@ -42,7 +42,7 @@ runs:
         directory_list="${{ inputs.directories }}";
         dirs_opts="";
         if [[ -n "${directory_list}" ]]; then
-          for dir in ${cov_dirs}; do dirs_opts+=" --directory=${dir}"; done
+          for dir in ${directory_list}; do dirs_opts+=" --directory=${dir}"; done
         fi
         # Generate the coverage report.
         lcov --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file lcov.info;
