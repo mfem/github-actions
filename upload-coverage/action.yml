@@ -22,10 +22,6 @@ inputs:
   directories:
     descripton: "List of directories to look for coverage info"
     required: false
-  config_file:
-    description: "Config file to use, otherwise let codecov use codecov.yml"
-    required: false
-
 
 runs:
   using: "composite"
@@ -33,11 +29,6 @@ runs:
   steps:
     - run: |
         cd ${{ inputs.project_dir }};
-        # Allow user to change codecov config file (and use a hidden one).
-        config_file="${{ inputs.config_file }}";
-        if [[ -n "${config_file}" ]]; then
-          cp -f ${config_file} codecov.yml
-        fi
         # Restrict search to directories listed, if any.
         directory_list="${{ inputs.directories }}";
         dirs_opts="";
