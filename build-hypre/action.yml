@@ -33,6 +33,7 @@ runs:
         tar -xzf ${{ inputs.hypre-archive }};
         cd ${{ inputs.hypre-dir }}/src;
         ./configure --disable-fortran CC=mpicc CXX=mpic++;
-        make -j3;
+        make install;
+        mv hypre ../ && rm -rf * && mv ../hypre ./
         cd ../..;
       shell: bash
