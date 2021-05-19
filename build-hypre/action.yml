@@ -31,6 +31,7 @@ runs:
         wget --no-verbose ${{ inputs.hypre-url }}/${{ inputs.hypre-archive }};
         rm -rf ${{ inputs.hypre-dir }};
         tar -xzf ${{ inputs.hypre-archive }};
+        # TODO: There is no guarantee that inputs.hypre-dir will exist...
         cd ${{ inputs.hypre-dir }}/src;
         ./configure --disable-fortran CC=mpicc CXX=mpic++;
         make install;
