@@ -10,8 +10,8 @@ Projects using these actions:
 - [ceed/remhos](https://github.com/ceed/remhos)
 
 Description of the actions:
-- *build-hypre* will download and build hypre with some degree of configuration, dictated by mfem typical usage.
-- *build-metis* will download and build metis with some degree of configuration, dictated by mfem typical usage.
-- *build-mfem* will download and build mfem. This one has more configuration options, since we want to enable building various mfem configuration. It is also intended to build mfem both as the main project (in mfem CI) or as a dependency, in which case one can control what repo and branch to use.
-- *upload-coverage* is a standard action to upload coverage information to codecov.
+- [`build-hypre`](build-hypre/action.yml) will download and build hypre with some degree of configuration, dictated by mfem typical usage.
+- [`build-metis`](build-metis/action.yml) will download and build metis with some degree of configuration, dictated by mfem typical usage.
+- [`build-mfem`](build-mfem/action.yml) will download and build mfem. This one has more configuration options, since we want to enable building various mfem configuration. It is also intended to build mfem both as the main project (in mfem CI) or as a dependency, in which case one can control what repo and branch to use.
+- [`upload-coverage`](upload-coverage/action.yml) is a standard action to upload coverage information to codecov.
 
