@@ -85,9 +85,10 @@ runs:
         if [[ ${{ inputs.target }} == 'debug' ]]; then
           DEBUG="YES";
           BUILD_TYPE="Debug";
-          if [[ ${{ inputs.os }} == 'ubuntu-18.04' ]]; then
-            CPPFLAGS+=" -pedantic -Wall -Werror";
-          fi
+        fi
+        if [[ ${{ inputs.os }} != 'ubuntu-18.04' || \
+              ${{ inputs.target }} == 'debug' ]]; then
+          CPPFLAGS+=" -pedantic -Wall -Werror";
         fi
         echo "[STATUS] DEBUG: ${DEBUG}"
         echo "[STATUS] BUILD_TYPE: ${BUILD_TYPE}"
