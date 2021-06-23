@@ -23,6 +23,10 @@ inputs:
     description: 'MPI status'
     required: false
     default: parallel
+  shared:
+    description: 'Build MFEM shared lib (YES, NO, only)'
+    required: false
+    default: NO
   codecov:
     description: 'Codecov status'
     required: false
@@ -79,6 +83,17 @@ runs:
           ln -s -f ${{ inputs.metis-dir }} metis-4.0;
         fi
         echo "[STATUS] MPI: ${MPI}"
+        SHARED=NO
+        STATIC=YES
+        if [[ ${{ inputs.shared }} == 'only' ]]; then
+          SHARED=YES
+          STATIC=NO
+        elif [[ ${{ inputs.shared }} == 'yes' ]]; then
+          SHARED=YES
+          STATIC=YES
+        fi
+        echo "[STATUS] STATIC: ${STATIC}"
+        echo "[STATUS] SHARED: ${SHARED}"
         CPPFLAGS="";
         DEBUG="NO";
         BUILD_TYPE="Release"
@@ -102,12 +117,19 @@ runs:
             mkdir build && cd build;
             cmake \
               -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+              -D BUILD_SHARED_LIBS=${SHARED} \
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
               -D HYPRE_DIR=../../hypre/src/hypre \
               ..
         else
-            make config MFEM_USE_MPI=${MPI} MFEM_MPI_NP=2 MFEM_DEBUG=${DEBUG} CPPFLAGS="${CPPFLAGS}";
+            make config \
+              MFEM_USE_MPI=${MPI} \
+              MFEM_MPI_NP=2 \
+              MFEM_DEBUG=${DEBUG} \
+              STATIC=${STATIC} \
+              SHARED=${SHARED} \
+              CPPFLAGS="${CPPFLAGS}";
         fi
       shell: bash
 
@@ -125,4 +147,3 @@ runs:
             make all -j3
         fi
       shell: bash
-
