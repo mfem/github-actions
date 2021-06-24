@@ -32,7 +32,7 @@ runs:
         rm -rf ${{ inputs.metis-dir }};
         tar -xzf ${{ inputs.metis-archive }};
         cd ${{ inputs.metis-dir }}
-        make -j3 -C Lib CC=mpicc OPTFLAGS="-Wno-error=implicit-function-declaration -O2";
+        make -j3 -C Lib CC=mpicc OPTFLAGS="-fPIC -Wno-error=implicit-function-declaration -O2";
         mv libmetis.a Lib ../ && rm -rf * && mv ../libmetis.a ../Lib ./;
         rm -f Lib/*.{c,o}
       shell: bash
