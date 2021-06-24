@@ -33,7 +33,7 @@ runs:
         tar -xzf ${{ inputs.hypre-archive }};
         # TODO: There is no guarantee that inputs.hypre-dir will exist...
         cd ${{ inputs.hypre-dir }}/src;
-        ./configure --disable-fortran --enable-shared CC=mpicc CXX=mpic++;
+        ./configure --disable-fortran --with-extra-CXXFLAGS="-fPIC" --with-extra-CFLAGS="-fPIC" CC=mpicc CXX=mpic++;
         make install;
         mv hypre ../ && rm -rf * && mv ../hypre ./
         cd ../..;
