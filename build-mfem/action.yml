@@ -56,7 +56,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: configure mfem
+    - name: configure
       run: |
         echo "----------------------------"
         echo "--- Download source code ---"
@@ -133,17 +133,28 @@ runs:
         fi
       shell: bash
 
-    - name: build mfem
+    - name: build
       run: |
         echo "------------------"
         echo "--- Build mfem ---"
         cd ${{ inputs.mfem-dir }}
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
-            cd build
-            make -j3 mfem examples
-            cd tests/unit
-            make -j3
+            cd build && make -j3 mfem
         else
-            make all -j3
+            make mfem -j3
+        fi
+      shell: bash
+
+    - name: check
+      run: |
+        echo "------------------"
+        echo "--- Check mfem ---"
+        cd ${{ inputs.mfem-dir }}
+        if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
+            make -C build check
+            make -C build/tests/unit -j3 && ctest --output-on-failure
+        else
+            make check
+            make -C tests/unit -j3 && make unittest
         fi
       shell: bash
