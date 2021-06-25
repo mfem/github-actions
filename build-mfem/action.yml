@@ -139,9 +139,9 @@ runs:
         echo "--- Build mfem ---"
         cd ${{ inputs.mfem-dir }}
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
-            cd build && make -j3 mfem
+            make -C build -j3
         else
-            make mfem -j3
+            make -j3
         fi
       shell: bash
 
