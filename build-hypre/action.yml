@@ -12,27 +12,43 @@
 name: build-hypre
 
 inputs:
-  hypre-url:
+  url:
     description: 'URL where to look for Hypre'
     required: false
     default: 'https://github.com/hypre-space/hypre/archive'
-  hypre-archive:
+  archive:
     description: 'Archive to download'
     required: true
-  hypre-dir:
+  dir:
     description: 'Hypre top directory name'
     required: true
+  target:
+    description: 'A key to identify the desired hypre config (basic, bigint)'
+    required: false
+    default: basic
 
 runs:
   using: "composite"
   steps:
     - name: Install Hypre
       run: |
-        wget --no-verbose ${{ inputs.hypre-url }}/${{ inputs.hypre-archive }};
-        rm -rf ${{ inputs.hypre-dir }};
-        tar -xzf ${{ inputs.hypre-archive }};
-        cd ${{ inputs.hypre-dir }}/src;
-        ./configure --disable-fortran CC=mpicc CXX=mpic++;
+        echo "Map target to options"
+        if [[ "${{ inputs.target }}" == "basic" ]]
+        then
+          export hypre_options="--disable-fortran";
+        elif [[ "${{ inputs.target }}" == "bigint" ]]
+        then
+          export hypre_options="--disable-fortran --enable-bigint";
+        else
+          echo "Hypre target not recognized";
+          exit 1;
+        fi
+        echo "Installing Hypre"
+        wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
+        rm -rf ${{ inputs.dir }};
+        tar -xzf ${{ inputs.archive }};
+        cd ${{ inputs.dir }}/src;
+        ./configure ${hypre_options} CC=mpicc CXX=mpic++;
         make -j3;
         cd ../..;
       shell: bash

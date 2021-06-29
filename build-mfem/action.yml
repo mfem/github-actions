@@ -30,6 +30,10 @@ inputs:
   hypre-dir:
     description: 'hypre install location working dir'
     required: true
+  hypre-target:
+    description: 'hypre configuration to use (basic, bigint)'
+    required: false
+    default: basic
   metis-dir:
     description: 'metis install location working dir'
     required: true
@@ -81,6 +85,9 @@ runs:
         echo "[STATUS] MPI: ${MPI}"
         CPPFLAGS="";
         DEBUG="NO";
+        if [[ ${{ inputs.hypre-target }} == 'bigint' ]]; then
+          CPPFLAGS+=" -DHYPRE_BIGINT"
+        fi
         BUILD_TYPE="Release"
         if [[ ${{ inputs.target }} == 'debug' ]]; then
           DEBUG="YES";
