@@ -16,9 +16,9 @@ inputs:
     description: 'os'
     required: true
   target:
-    description: 'Type of target (debug, optim)'
+    description: 'Type of target (dbg, opt)'
     required: false
-    default: optim
+    default: opt
   mpi:
     description: 'MPI status'
     required: false
@@ -82,7 +82,7 @@ runs:
         CPPFLAGS=""
         DEBUG="NO"
         BUILD_TYPE="Release"
-        if [[ ${{ inputs.target }} == 'debug' ]]; then
+        if [[ ${{ inputs.target }} == 'dbg' ]]; then
           DEBUG="YES";
           BUILD_TYPE="Debug";
           if [[ ${{ inputs.os }} == 'ubuntu-18.04' ]]; then
