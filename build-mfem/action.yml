@@ -16,13 +16,13 @@ inputs:
     description: 'os'
     required: true
   target:
-    description: 'Type of target (debug, optim)'
+    description: 'Type of target (dbg, opt)'
     required: false
-    default: optim
+    default: opt
   mpi:
     description: 'MPI status'
     required: false
-    default: parallel
+    default: par
   codecov:
     description: 'Codecov status'
     required: false
@@ -71,7 +71,7 @@ runs:
         echo "-----------------------------"
         echo "--- Prepare Configuration ---"
         MPI="NO"
-        if [[ ${{ inputs.mpi }} == 'parallel' ]]; then
+        if [[ ${{ inputs.mpi }} == 'par' ]]; then
           MPI="YES"
           echo "[INFO] Hypre symlink: hypre -> ${{ inputs.hypre-dir }}"
           ln -s -f ${{ inputs.hypre-dir }} hypre;
@@ -79,10 +79,10 @@ runs:
           ln -s -f ${{ inputs.metis-dir }} metis-4.0;
         fi
         echo "[STATUS] MPI: ${MPI}"
-        CPPFLAGS="";
-        DEBUG="NO";
+        CPPFLAGS=""
+        DEBUG="NO"
         BUILD_TYPE="Release"
-        if [[ ${{ inputs.target }} == 'debug' ]]; then
+        if [[ ${{ inputs.target }} == 'dbg' ]]; then
           DEBUG="YES";
           BUILD_TYPE="Debug";
         fi

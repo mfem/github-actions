@@ -10,7 +10,7 @@
 # CONTRIBUTING.md for details.
 
 name: Upload Coverage
-description: Upload coverage to codecov
+description: Upload coverage to codecov, requires lcov.
 
 inputs:
   name:
@@ -19,15 +19,33 @@ inputs:
   project_dir:
     description: "Path to the project directory"
     required: true
+  directories:
+    descripton: "List of directories to look for coverage info"
+    required: false
 
 runs:
   using: "composite"
 
   steps:
     - run: |
-        cd ${{ inputs.project_dir }}
-        curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash
-        bash codecov.sh -n "${{ inputs.name }}"
+        cd ${{ inputs.project_dir }};
+        # Restrict search to directories listed, if any.
+        directory_list="${{ inputs.directories }}";
+        dirs_opts="";
+        if [[ -n "${directory_list}" ]]; then
+          for dir in ${directory_list}; do dirs_opts+=" --directory=${dir}"; done
+        fi
+        # Generate the coverage report.
+        lcov --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file lcov.info;
+        # Download the coverage export script.
+        curl --silent --output codecov --fail https://codecov.io/bash || \
+          curl -s -o codecov -f https://codecov.io/bash;
+        VERSION=$(grep -o 'VERSION=\"[0-9\.]*\"' codecov | cut -d'"' -f2);
+        for i in 1 256 512
+        do
+          shasum -a $i -c <(curl -s "https://raw.githubusercontent.com/codecov/codecov-bash/${VERSION}/SHA${i}SUM" | grep codecov) || \
+          shasum -a $i -c <(curl -s "https://raw.githubusercontent.com/codecov/codecov-bash/${VERSION}/SHA${i}SUM" | grep codecov)
+        done
+        # Effectively export the coverage report.
+        bash codecov -n "${{ inputs.name }}" -X gcov;
       shell: bash
