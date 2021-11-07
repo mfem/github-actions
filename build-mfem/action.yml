@@ -86,7 +86,7 @@ runs:
           DEBUG="YES";
           BUILD_TYPE="Debug";
         fi
-        if [[ ${{ inputs.os }} != 'ubuntu-18.04' || \
+        if [[ ${{ runner.os }} != 'Linux' || \
               ${{ inputs.target }} == 'dbg' ]]; then
           CPPFLAGS+=" -pedantic -Wall -Werror";
         fi
