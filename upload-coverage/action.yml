@@ -10,7 +10,7 @@
 # CONTRIBUTING.md for details.
 
 name: Upload Coverage
-description: Upload coverage to codecov
+description: Upload coverage to codecov, requires lcov.
 
 inputs:
   name:
@@ -19,6 +19,9 @@ inputs:
   project_dir:
     description: "Path to the project directory"
     required: true
+  directories:
+    descripton: "List of directories to look for coverage info"
+    required: false
 
 runs:
   using: "composite"
@@ -26,8 +29,26 @@ runs:
   steps:
     - run: |
         cd ${{ inputs.project_dir }}
-        curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash || \
-          curl -o codecov.sh -f https://codecov.io/bash
-        bash codecov.sh -n "${{ inputs.name }}"
+        # Restrict search to directories listed, if any.
+        directory_list="${{ inputs.directories }}";
+        dirs_opts="";
+        if [[ -n "${directory_list}" ]]; then
+          for dir in ${directory_list}; do dirs_opts+=" --directory=${dir}"; done
+        fi
+        # Generate the coverage report.
+        lcov --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file lcov.info;
+        # The variable $RUNNER_OS should be either "Linux" or "macOS"
+        os_lowercase=$(echo $RUNNER_OS | awk '{print tolower($0)}')
+        # The prefix will end with "linux" or "macos" depending on the runner OS
+        prefix="https://uploader.codecov.io/latest/$os_lowercase"
+        curl -Os "$prefix/codecov"
+        # Check integrity of the binary uploader (cf. https://docs.codecov.com/docs/codecov-uploader#integrity-checking-the-uploader)
+        curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import # One-time step
+        curl -Os "$prefix/codecov.SHA256SUM"
+        curl -Os "$prefix/codecov.SHA256SUM.sig"
+        gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+        shasum -a 256 -c codecov.SHA256SUM
+        # Run the uploader
+        chmod +x codecov
+        ./codecov -n "${{ inputs.name }}"
       shell: bash
