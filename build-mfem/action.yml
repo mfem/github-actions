@@ -90,6 +90,10 @@ runs:
               ${{ inputs.target }} == 'dbg' ]]; then
           CPPFLAGS+=" -pedantic -Wall -Werror";
         fi
+        if [[ ${{ runner.os }} != 'Linux' && \
+              ${{ inputs.target }} == 'dbg' ]]; then
+          CPPFLAGS+=" -Wshadow";
+        fi
         echo "[STATUS] DEBUG: ${DEBUG}"
         echo "[STATUS] BUILD_TYPE: ${BUILD_TYPE}"
         if [[ ${{ inputs.codecov }} == 'YES' ]]; then
