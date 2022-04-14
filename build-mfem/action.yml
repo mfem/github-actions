@@ -119,9 +119,9 @@ runs:
         cd ${{ inputs.mfem-dir }}
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
             cd build
-            make -j3 mfem examples
+            cmake --build . --parallel 3 --target mfem examples
             cd tests/unit
-            make -j3
+            cmake --build . --parallel 3
         else
             make all -j3
         fi
