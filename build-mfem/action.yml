@@ -100,8 +100,11 @@ runs:
         echo "--- Configure mfem ---"
         cd ${{ inputs.mfem-dir }};
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
+            [[ ${{ inputs.os }} == "windows-2022" ]] \
+              && toolchain_file="${VCPKG_INSTALLATION_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
             mkdir build && cd build;
             cmake \
+              -D CMAKE_TOOLCHAIN_FILE:STRING=${toolchain_file} \
               -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
@@ -120,8 +123,7 @@ runs:
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
             cd build
             cmake --build . --parallel 3 --target mfem examples
-            cd tests/unit
-            cmake --build . --parallel 3
+            cmake --build tests/unit --parallel 3 --verbose
         else
             make all -j3
         fi
