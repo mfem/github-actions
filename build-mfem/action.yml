@@ -119,10 +119,12 @@ runs:
       run: |
         echo "------------------"
         echo "--- Build mfem ---"
+        BUILD_TYPE="Release"
+        [[ ${{ inputs.target }} == 'dbg' ]] && BUILD_TYPE="Debug";
         cd ${{ inputs.mfem-dir }}
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
             cd build
-            cmake --build . --parallel 3 --target mfem examples
+            cmake --build . --parallel 3 --target mfem examples --config "${BUILD_TYPE}"
             #TODO: fix below
             if [[ ${{ inputs.os }} != "windows-2022" ]]; then
               cmake --build tests/unit --parallel 3
