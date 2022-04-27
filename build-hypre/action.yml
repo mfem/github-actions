@@ -30,6 +30,21 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Get Hypre (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        $URI_HYPRE = "${{ inputs.url }}/${{ inputs.archive }}"
+        Invoke-WebRequest -Uri $URI_HYPRE -OutFile ${{ inputs.archive }}
+        rm -rf ${{ inputs.dir }};
+        tar -xzf ${{ inputs.archive }};
+
+    - name: Get Hypre (Linux/macOS)
+      if: runner.os != "Windows"
+      run: |
+        wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
+        rm -rf ${{ inputs.dir }};
+        tar -xzf ${{ inputs.archive }};
+
     - name: Install Hypre
       run: |
         echo "Map target to options"
@@ -44,9 +59,6 @@ runs:
           exit 1;
         fi
         echo "Installing Hypre"
-        wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
-        rm -rf ${{ inputs.dir }};
-        tar -xzf ${{ inputs.archive }};
         cd ${{ inputs.dir }}/src;
         ./configure ${hypre_options} CC=mpicc CXX=mpic++;
         make -j3;
