@@ -65,7 +65,7 @@ runs:
         cmake -Hsrc -Bbuild \
           ${hypre_options} \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=../install
+          -DCMAKE_INSTALL_PREFIX=install
         cmake --build build --config Release --parallel 3
         cmake --install build --config Release
         cd ../..;
