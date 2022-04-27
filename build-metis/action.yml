@@ -31,7 +31,7 @@ runs:
       run: |
         $URI_METIS = "${{ inputs.url }}/${{ inputs.archive }}"
         Invoke-WebRequest -Uri $URI_METIS -OutFile ${{ inputs.archive }}
-        rm -rf ${{ inputs.dir }};
+        Remove-Item ${{ inputs.dir }} -Force -Recurse -ErrorAction Ignore;
         tar -xzf ${{ inputs.archive }};
       shell: pwsh
 
