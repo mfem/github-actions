@@ -37,6 +37,7 @@ runs:
         Invoke-WebRequest -Uri $URI_HYPRE -OutFile ${{ inputs.archive }}
         rm -rf ${{ inputs.dir }};
         tar -xzf ${{ inputs.archive }};
+      shell: pwsh
 
     - name: Get Hypre (Linux/macOS)
       if: runner.os != "Windows"
@@ -44,6 +45,7 @@ runs:
         wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
         rm -rf ${{ inputs.dir }};
         tar -xzf ${{ inputs.archive }};
+      shell: bash
 
     - name: Install Hypre
       run: |

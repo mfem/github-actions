@@ -33,13 +33,15 @@ runs:
         Invoke-WebRequest -Uri $URI_METIS -OutFile ${{ inputs.archive }}
         rm -rf ${{ inputs.dir }};
         tar -xzf ${{ inputs.archive }};
-    
+      shell: pwsh
+
     - name: Get Metis (Linux/macOS)
       if: runner.os != 'Windows'
       run: |
         wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
         rm -rf ${{ inputs.dir }};
         tar -xzf ${{ inputs.archive }};
+      shell: bash
 
     - name: Install Metis (make)
       run: |
