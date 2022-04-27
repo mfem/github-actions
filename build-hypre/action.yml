@@ -40,7 +40,7 @@ runs:
       shell: pwsh
 
     - name: Get Hypre (Linux/macOS)
-      if: runner.os != "Windows"
+      if: runner.os != 'Windows'
       run: |
         wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
         rm -rf ${{ inputs.dir }};
