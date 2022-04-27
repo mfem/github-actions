@@ -52,17 +52,22 @@ runs:
         echo "Map target to options"
         if [[ "${{ inputs.target }}" == "int32" ]]
         then
-          export hypre_options="--disable-fortran";
+          export hypre_options="";
         elif [[ "${{ inputs.target }}" == "int64" ]]
         then
-          export hypre_options="--disable-fortran --enable-bigint";
+          export hypre_options="-DHYPRE_ENABLE_BIGINT=ON";
         else
           echo "Hypre target not recognized";
           exit 1;
         fi
         echo "Installing Hypre"
-        cd ${{ inputs.dir }}/src;
-        ./configure ${hypre_options} CC=mpicc CXX=mpic++;
-        make -j3;
+        cd ${{ inputs.dir }};
+        cmake -H. -Bbuild \
+          ${hypre_options} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=../install \
+          ../src
+        cmake --build build --config Release --parallel 3
+        cmake --install build --config Release
         cd ../..;
       shell: bash
