@@ -75,8 +75,10 @@ runs:
           MPI="YES"
           echo "[INFO] Hypre symlink: hypre -> ${{ inputs.hypre-dir }}"
           ln -s -f ${{ inputs.hypre-dir }} hypre;
-          echo "[INFO] Metis symlink: metis -> ${{ inputs.metis-dir }}"
-          ln -s -f ${{ inputs.metis-dir }} metis-4.0;
+          if [[ -d ${{ inputs.metis-dir }} ]]; then
+            ln -s -f ${{ inputs.metis-dir }} metis-4.0;
+            echo "[INFO] Metis symlink: metis -> ${{ inputs.metis-dir }}"
+          fi
         fi
         echo "[STATUS] MPI: ${MPI}"
         CPPFLAGS=""
