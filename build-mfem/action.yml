@@ -141,7 +141,9 @@ runs:
             [[ ${{ inputs.library-only }} == 'true' ]] && CMAKE_TARGET="mfem";
             cd build
             cmake --build . --parallel 3 --target ${CMAKE_TARGET} --config "${BUILD_TYPE}"
-            cmake --build tests/unit --parallel 3 --config "${BUILD_TYPE}"
+            if [[ ${{ inputs.library-only }} == 'false' ]]; then
+              cmake --build tests/unit --parallel 3 --config "${BUILD_TYPE}"
+            fi
         else
             MAKE_TARGET="all"
             [[ ${{ inputs.library-only }} == 'true' ]] && MAKE_TARGET="";
