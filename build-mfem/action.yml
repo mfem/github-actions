@@ -48,6 +48,10 @@ inputs:
     description: 'identify the build system to use (make,cmake)'
     required: false
     default: make
+  library-only:
+    description: 'only build the mfem library, without examples/tests/miniapps'
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
@@ -133,11 +137,15 @@ runs:
         [[ ${{ inputs.target }} == 'dbg' ]] && BUILD_TYPE="Debug";
         cd ${{ inputs.mfem-dir }}
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
+            CMAKE_TARGET="exec"
+            [[ ${{ inputs.library-only }} == 'true' ]] && CMAKE_TARGET="mfem";
             cd build
-            cmake --build . --parallel 3 --target mfem examples miniapps --config "${BUILD_TYPE}"
+            cmake --build . --parallel 3 --target ${CMAKE_TARGET} --config "${BUILD_TYPE}"
             cmake --build tests/unit --parallel 3 --config "${BUILD_TYPE}"
         else
-            make all -j3
+            MAKE_TARGET="all"
+            [[ ${{ inputs.library-only }} == 'true' ]] && MAKE_TARGET="";
+            make ${MAKE_TARGET} -j3
         fi
       shell: bash
 
