@@ -134,7 +134,7 @@ runs:
         cd ${{ inputs.mfem-dir }}
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
             cd build
-            cmake --build . --parallel 3 --config "${BUILD_TYPE}"
+            cmake --build . --parallel 3 --target mfem examples miniapps --config "${BUILD_TYPE}"
             cmake --build tests/unit --parallel 3 --config "${BUILD_TYPE}"
         else
             make all -j3
