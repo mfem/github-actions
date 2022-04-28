@@ -102,11 +102,14 @@ runs:
         echo "--- Configure mfem ---"
         cd ${{ inputs.mfem-dir }};
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
-            [[ ${{ inputs.os }} == "windows-2022" ]] \
-              && toolchain_file="${VCPKG_INSTALLATION_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
+            if [[ ${{ inputs.os }} == "windows-2022" ]]; then
+              toolchain_file="${VCPKG_INSTALLATION_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
+              vcpkg_triplet="x64-windows-static"
+            fi
             mkdir build && cd build;
             cmake \
               -D CMAKE_TOOLCHAIN_FILE:STRING=${toolchain_file} \
+              -D VCPKG_TARGET_TRIPLET=${vcpkg_triplet} \
               -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
