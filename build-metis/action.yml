@@ -26,24 +26,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Get Metis (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        $URI_METIS = "${{ inputs.url }}/${{ inputs.archive }}"
-        Invoke-WebRequest -Uri $URI_METIS -OutFile ${{ inputs.archive }}
-        Remove-Item ${{ inputs.dir }} -Force -Recurse -ErrorAction Ignore;
-        tar -xzf ${{ inputs.archive }};
-      shell: pwsh
-
-    - name: Get Metis (Linux/macOS)
-      if: runner.os != 'Windows'
+    - name: Install Metis
       run: |
         wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
         rm -rf ${{ inputs.dir }};
         tar -xzf ${{ inputs.archive }};
-      shell: bash
-
-    - name: Install Metis (make)
-      run: |
         make -j3 -C ${{ inputs.dir }}/Lib CC=mpicc OPTFLAGS="-Wno-error=implicit-function-declaration -O2";
       shell: bash
