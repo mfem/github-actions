@@ -77,8 +77,10 @@ runs:
         MPI="NO"
         if [[ ${{ inputs.mpi }} == 'par' ]]; then
           MPI="YES"
-          echo "[INFO] Hypre symlink: hypre -> ${{ inputs.hypre-dir }}"
-          ln -s -f ${{ inputs.hypre-dir }} hypre;
+          if [[ -d ${{ inputs.hypre-dir }} ]]; then
+            ln -s -f ${{ inputs.hypre-dir }} hypre;
+            echo "[INFO] Hypre symlink: hypre -> ${{ inputs.hypre-dir }}"
+          fi
           if [[ -d ${{ inputs.metis-dir }} ]]; then
             ln -s -f ${{ inputs.metis-dir }} metis-4.0;
             echo "[INFO] Metis symlink: metis -> ${{ inputs.metis-dir }}"
