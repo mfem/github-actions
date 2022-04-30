@@ -30,7 +30,25 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install Hypre
+    - name: Get Hypre (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        $URI_HYPRE = "${{ inputs.url }}/${{ inputs.archive }}"
+        Invoke-WebRequest -Uri $URI_HYPRE -OutFile ${{ inputs.archive }}
+        Remove-Item ${{ inputs.dir }} -Force -Recurse -ErrorAction Ignore;
+        tar -xzf ${{ inputs.archive }};
+      shell: pwsh
+
+    - name: Get Hypre (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
+        rm -rf ${{ inputs.dir }};
+        tar -xzf ${{ inputs.archive }};
+      shell: bash
+
+    - name: Install Hypre (make)
+      if: runner.os != 'Windows'
       run: |
         echo "Map target to options"
         if [[ "${{ inputs.target }}" == "int32" ]]
@@ -50,5 +68,30 @@ runs:
         ./configure --prefix=${install_prefix} ${hypre_options} CC=mpicc CXX=mpic++;
         make -j3;
         make install;
+        cd ../..;
+      shell: bash
+
+    - name: Install Hypre (cmake)
+      if: runner.os == 'Windows'
+      run: |
+        echo "Map target to options"
+        if [[ "${{ inputs.target }}" == "int32" ]]
+        then
+          export hypre_options="";
+        elif [[ "${{ inputs.target }}" == "int64" ]]
+        then
+          export hypre_options="-DHYPRE_ENABLE_BIGINT=ON";
+        else
+          echo "Hypre target not recognized";
+          exit 1;
+        fi
+        echo "Installing Hypre"
+        cd ${{ inputs.dir }};
+        cmake -Hsrc -Bbuild \
+          ${hypre_options} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=install
+        cmake --build build --config Release --parallel 3
+        cmake --install build --config Release
         cd ../..;
       shell: bash
