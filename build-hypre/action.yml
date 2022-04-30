@@ -44,11 +44,11 @@ runs:
           exit 1;
         fi
         echo "Installing Hypre"
-        wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
-        rm -rf ${{ inputs.dir }};
-        tar -xzf ${{ inputs.archive }};
-        cd ${{ inputs.dir }}/src;
-        ./configure ${hypre_options} CC=mpicc CXX=mpic++;
+        cd ${{ inputs.dir }};
+        install_prefix="$(pwd)/install";
+        cd src;
+        ./configure --prefix=${install_prefix} ${hypre_options} CC=mpicc CXX=mpic++;
         make -j3;
+        make install;
         cd ../..;
       shell: bash

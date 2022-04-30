@@ -123,7 +123,7 @@ runs:
               -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
-              -D HYPRE_DIR=../../hypre/src/hypre \
+              -D HYPRE_DIR=../../hypre/install \
               ${{ inputs.config-options }} \
               ..
         else
@@ -132,6 +132,7 @@ runs:
               MFEM_MPI_NP=2 \
               MFEM_DEBUG=${DEBUG} \
               CPPFLAGS="${CPPFLAGS}" \
+              HYPRE_DIR=@MFEM_DIR@/../hypre/install \
               ${{ inputs.config-options }}
         fi
       shell: bash
