@@ -52,6 +52,10 @@ inputs:
     description: 'only build the mfem library, without examples/tests/miniapps'
     required: false
     default: 'false'
+  config-options:
+    description: 'extra options to pass to build configuration'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -120,13 +124,15 @@ runs:
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
               -D HYPRE_DIR=../../hypre/src/hypre \
+              ${{ inputs.config-options }} \
               ..
         else
             make config \
               MFEM_USE_MPI=${MPI} \
               MFEM_MPI_NP=2 \
               MFEM_DEBUG=${DEBUG} \
-              CPPFLAGS="${CPPFLAGS}"
+              CPPFLAGS="${CPPFLAGS}" \
+              ${{ inputs.config-options }}
         fi
       shell: bash
 
