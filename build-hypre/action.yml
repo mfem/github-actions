@@ -26,6 +26,10 @@ inputs:
     description: 'A key to identify the desired hypre config (int32, int64)'
     required: false
     default: int32
+  build-system:
+    description: 'identify the build system to use (make,cmake)'
+    required: false
+    default: make
 
 runs:
   using: "composite"
@@ -48,7 +52,7 @@ runs:
       shell: bash
 
     - name: Install Hypre (make)
-      if: runner.os != 'Windows'
+      if: inputs.build-system == 'make'
       run: |
         echo "Map target to options"
         if [[ "${{ inputs.target }}" == "int32" ]]
@@ -72,7 +76,7 @@ runs:
       shell: bash
 
     - name: Install Hypre (cmake)
-      if: runner.os == 'Windows'
+      if: inputs.build-system == 'cmake'
       run: |
         echo "Map target to options"
         if [[ "${{ inputs.target }}" == "int32" ]]
