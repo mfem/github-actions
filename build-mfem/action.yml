@@ -81,6 +81,7 @@ runs:
         MPI="NO"
         if [[ ${{ inputs.mpi }} == 'par' ]]; then
           MPI="YES"
+          # If the directory does not exist, we assume it was installed elsewhere and don’t create the link
           if [[ -d ${{ inputs.hypre-dir }} ]]; then
             ln -s -f ${{ inputs.hypre-dir }} hypre;
             echo "[INFO] Hypre symlink: hypre -> ${{ inputs.hypre-dir }}"
