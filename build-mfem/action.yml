@@ -48,6 +48,14 @@ inputs:
     description: 'identify the build system to use (make,cmake)'
     required: false
     default: make
+  library-only:
+    description: 'only build the mfem library, without examples/tests/miniapps'
+    required: false
+    default: 'false'
+  config-options:
+    description: 'extra options to pass to build configuration'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -73,10 +81,15 @@ runs:
         MPI="NO"
         if [[ ${{ inputs.mpi }} == 'par' ]]; then
           MPI="YES"
-          echo "[INFO] Hypre symlink: hypre -> ${{ inputs.hypre-dir }}"
-          ln -s -f ${{ inputs.hypre-dir }} hypre;
-          echo "[INFO] Metis symlink: metis -> ${{ inputs.metis-dir }}"
-          ln -s -f ${{ inputs.metis-dir }} metis-4.0;
+          # If the directory does not exist, we assume it was installed elsewhere and don’t create the link
+          if [[ -d ${{ inputs.hypre-dir }} ]]; then
+            ln -s -f ${{ inputs.hypre-dir }} hypre;
+            echo "[INFO] Hypre symlink: hypre -> ${{ inputs.hypre-dir }}"
+          fi
+          if [[ -d ${{ inputs.metis-dir }} ]]; then
+            ln -s -f ${{ inputs.metis-dir }} metis-4.0;
+            echo "[INFO] Metis symlink: metis -> ${{ inputs.metis-dir }}"
+          fi
         fi
         echo "[STATUS] MPI: ${MPI}"
         CPPFLAGS=""
@@ -104,15 +117,28 @@ runs:
         echo "--- Configure mfem ---"
         cd ${{ inputs.mfem-dir }};
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
+            if [[ ${{ inputs.os }} == "windows-2022" ]]; then
+              toolchain_file="${VCPKG_INSTALLATION_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
+              vcpkg_triplet="x64-windows-static"
+            fi
             mkdir build && cd build;
             cmake \
+              -D CMAKE_TOOLCHAIN_FILE:STRING=${toolchain_file} \
+              -D VCPKG_TARGET_TRIPLET=${vcpkg_triplet} \
               -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
-              -D HYPRE_DIR=../../hypre/src/hypre \
+              -D HYPRE_DIR=../../hypre/install \
+              ${{ inputs.config-options }} \
               ..
         else
-            make config MFEM_USE_MPI=${MPI} MFEM_MPI_NP=2 MFEM_DEBUG=${DEBUG} CPPFLAGS="${CPPFLAGS}";
+            make config \
+              MFEM_USE_MPI=${MPI} \
+              MFEM_MPI_NP=2 \
+              MFEM_DEBUG=${DEBUG} \
+              CPPFLAGS="${CPPFLAGS}" \
+              HYPRE_DIR=@MFEM_DIR@/../hypre/install \
+              ${{ inputs.config-options }}
         fi
       shell: bash
 
@@ -120,14 +146,21 @@ runs:
       run: |
         echo "------------------"
         echo "--- Build mfem ---"
+        BUILD_TYPE="Release"
+        [[ ${{ inputs.target }} == 'dbg' ]] && BUILD_TYPE="Debug";
         cd ${{ inputs.mfem-dir }}
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
+            CMAKE_TARGET="exec"
+            [[ ${{ inputs.library-only }} == 'true' ]] && CMAKE_TARGET="mfem";
             cd build
-            make -j3 mfem examples
-            cd tests/unit
-            make -j3
+            cmake --build . --parallel 3 --target ${CMAKE_TARGET} --config "${BUILD_TYPE}"
+            if [[ ${{ inputs.library-only }} == 'false' ]]; then
+              cmake --build tests/unit --parallel 3 --config "${BUILD_TYPE}"
+            fi
         else
-            make all -j3
+            MAKE_TARGET="all"
+            [[ ${{ inputs.library-only }} == 'true' ]] && MAKE_TARGET="";
+            make ${MAKE_TARGET} -j3
         fi
       shell: bash
 
