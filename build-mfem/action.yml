@@ -93,6 +93,7 @@ runs:
         fi
         echo "[STATUS] MPI: ${MPI}"
         CPPFLAGS=""
+        METIS_LIB=""
         DEBUG="NO"
         BUILD_TYPE="Release"
         if [[ ${{ inputs.target }} == 'dbg' ]]; then
@@ -113,6 +114,13 @@ runs:
           CPPFLAGS+=" --coverage -fPIC -g";
         fi
         echo "[STATUS] CPPFLAGS: ${CPPFLAGS}"
+        if [[ ${{ inputs.mpi }} == 'par' ]]; then
+          METIS_LIB+="-L\$(METIS_DIR) -lmetis"
+          if [[ ${{ inputs.os }} == "windows-2022" ]];  then
+            METIS_LIB+=" -lGKlib"
+          fi
+        fi
+        echo "[STATUS] METIS_LIB: ${METIS_LIB}"
         echo "----------------------"
         echo "--- Configure mfem ---"
         cd ${{ inputs.mfem-dir }};
@@ -128,6 +136,7 @@ runs:
               -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
+              -D METIS_LIB="${METIS_LIB}" \
               -D HYPRE_DIR=../../hypre/install \
               ${{ inputs.config-options }} \
               ..
@@ -137,6 +146,7 @@ runs:
               MFEM_MPI_NP=2 \
               MFEM_DEBUG=${DEBUG} \
               CPPFLAGS="${CPPFLAGS}" \
+              METIS_LIB="${METIS_LIB}" \
               HYPRE_DIR=@MFEM_DIR@/../hypre/install \
               ${{ inputs.config-options }}
         fi
@@ -163,4 +173,3 @@ runs:
             make ${MAKE_TARGET} -j3
         fi
       shell: bash
-
