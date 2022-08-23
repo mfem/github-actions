@@ -117,7 +117,7 @@ runs:
         echo "--- Configure mfem ---"
         cd ${{ inputs.mfem-dir }};
         if [[ ${{ inputs.build-system }} == 'cmake' ]]; then
-            if [[ ${{ inputs.os }} == "windows-latest" ]]; then
+            if [[ ${{ runner.os }} == "Windows" ]]; then
               toolchain_file="${VCPKG_INSTALLATION_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
               vcpkg_triplet="x64-windows-static"
             fi
