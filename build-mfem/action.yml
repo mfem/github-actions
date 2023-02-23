@@ -121,6 +121,10 @@ runs:
               toolchain_file="${VCPKG_INSTALLATION_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
               vcpkg_triplet="x64-windows-static"
             fi
+            # Use the MPI wrapper on Ubuntu (at least on v22.04) to avoid slow
+            # linking times due to LTO compile flags.
+            USE_MPI_WRAPPER="-DMPICXX=mpicxx"
+            [[ ${{ runner.os }} != 'Linux' ]] && USE_MPI_WRAPPER=""
             mkdir build && cd build;
             cmake \
               -D CMAKE_TOOLCHAIN_FILE:STRING=${toolchain_file} \
@@ -129,6 +133,7 @@ runs:
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
               -D HYPRE_DIR=../../hypre/install \
+              ${USE_MPI_WRAPPER} \
               ${{ inputs.config-options }} \
               ..
         else
