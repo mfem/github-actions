@@ -42,8 +42,13 @@ runs:
         # The prefix will end with "linux" or "macos" depending on the runner OS
         prefix="https://uploader.codecov.io/latest/$os_lowercase"
         curl -Os "$prefix/codecov"
+        # Workaround for GPG issue: need to create the GNUPGHOME (with proper
+        # permissions) otherwise the trustedkeys file is not created.
+        export GNUPGHOME="$HOME/gnupg"
+        mkdir "$GNUPGHOME"
+        chmod 700 "$GNUPGHOME"
         # Check integrity of the binary uploader (cf. https://docs.codecov.com/docs/codecov-uploader#integrity-checking-the-uploader)
-        curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import # One-time step
+        curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.kbx --import # One-time step
         curl -Os "$prefix/codecov.SHA256SUM"
         curl -Os "$prefix/codecov.SHA256SUM.sig"
         gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
