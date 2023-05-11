@@ -103,8 +103,7 @@ runs:
               ${{ inputs.target }} == 'dbg' ]]; then
           CPPFLAGS+=" -pedantic -Wall -Werror";
         fi
-        if [[ ${{ runner.os }} != 'Linux' && \
-              ${{ inputs.target }} == 'dbg' ]]; then
+        if [[ ${{ runner.os }} != 'Linux' ]]; then
           CPPFLAGS+=" -Wshadow";
         fi
         echo "[STATUS] DEBUG: ${DEBUG}"
@@ -168,4 +167,3 @@ runs:
             make ${MAKE_TARGET} -j3
         fi
       shell: bash
-
