@@ -36,7 +36,7 @@ runs:
           for dir in ${directory_list}; do dirs_opts+=" --directory=${dir}"; done
         fi
         # Generate the coverage report.
-        lcov --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file lcov.info;
+        lcov --ignore-errors inconsistent --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file lcov.info;
         # The variable $RUNNER_OS should be either "Linux" or "macOS"
         os_lowercase=$(echo $RUNNER_OS | awk '{print tolower($0)}')
         # The prefix will end with "linux" or "macos" depending on the runner OS
