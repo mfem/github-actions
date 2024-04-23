@@ -1,21 +1,30 @@
-# build-and-test.yml
+# Copyright (c) 2010-2024, Lawrence Livermore National Security, LLC. Produced
+# at the Lawrence Livermore National Laboratory. All Rights reserved. See files
+# LICENSE and NOTICE for details. LLNL-CODE-806117.
 #
+# This file is part of the MFEM library. For more information and source code
+# availability visit https://mfem.org.
+#
+# MFEM is free software; you can redistribute it and/or modify it under the
+# terms of the BSD-3 license. We welcome feedback and contributions, see file
+# CONTRIBUTING.md for details.
+
+# build-pymfem
+#
+# This action intentionally does *not* incorporate other workflow actions such as `build-mfem`.
+# PyMFEM's build process is a superset of MFEM's build process, and we want to ensure that PyMFEM
+# is able to correctly build MFEM.
 #  - Builds PyMFEM in three stages:
 #    - MFEM dependencies + MFEM
 #    - SWIG bindings
 #    - PyMFEM
-#  - Runs tests under `run_examples.py`
-#  - If there is a failure, uploads test outputs as an artifact
 
-name: Build and Test
+name: build-pymfem
 
-on:
-  workflow_dispatch:
-  pull_request:
-  # TODO: setup a trigger to run on MFEM releases
+inputs:
 
 jobs:
-  build-and-test:
+  build-pymfem:
     strategy:
       fail-fast: false
       matrix:
