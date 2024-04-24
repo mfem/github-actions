@@ -22,166 +22,154 @@
 name: build-pymfem
 
 inputs:
+  os:
+    description: 'os'
+    default: 'ubuntu-latest'
+    enum: ['ubuntu-latest', 'macos-latest']
+  python-version:
+    description: 'Python version'
+    default: '3.9'
+    enum: ['3.7', '3.8', '3.9', '3.10', '3.11']
+  mfem-branch:
+    description: 'MFEM branch to checkout'
+    default: 'default' # 'default' uses a specific commit hash defined in setup.py:repos_sha
+    enum: ['default', 'master']
+  parallel:
+    description: 'Build parallel version'
+    default: false
+  cuda:
+    description: 'Build with CUDA'
+    default: false
+  cuda-toolkit-version:
+    default: '12.4.1'
+  cuda-driver-version:
+    default: '550.54.15'
+  libceed:
+    description: 'Build with libCEED'
+    default: false
+  gslib:
+    description: 'Build with GSlib'
+    default: false
+  # When phases==true, run each individual build step explicitly: mfem -> swig -> pymfem
+  phases:
+    description: 'Run build in phases'
+    default: true
 
-jobs:
-  build-pymfem:
-    strategy:
-      fail-fast: false
-      matrix:
-        # ---------- Main ----------
-        os: [ubuntu-latest, macos-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11'] # 3.12 is not supported by scipy
-        # NOTE: If setup.py could accept a commit hash as an argument, that could give us more flexibility here
-        mfem-branch: [master, default] # 'default' uses a specific commit hash defined in setup.py:repos_sha
-        parallel: [false, true]
 
-        # ---------- Dependencies ----------
-        cuda: [true]
-        libceed: [false]
-        gslib: [true]
+runs:
+  using: "composite"
+  steps:
+  # -------------------------------------------------------------------------------------------------
+  # Setup / config
+  # -------------------------------------------------------------------------------------------------
+  - name: Checkout repo
+    uses: actions/checkout@v4
 
-        # ---------- Build process ----------
-        # When phases==true, run each individual build step explicitly: mfem -> swig -> pymfem
-        phases: [true]
+  - name: Set up Python ${{ inputs.python-version }}
+    uses: actions/setup-python@v5
+    with:
+      python-version: ${{ inputs.python-version }}
+  # Reference for $${{ x && y || z }} syntax: https://7tonshark.com/posts/github-actions-ternary-operator/
+  - name: Set build flags
+    # These are all passed to setup.py as one concatenated string
+    run: |
+      echo "BUILD_FLAGS=${{ inputs.parallel && '--with-parallel' || '' }} \
+      ${{ inputs.cuda && '--with-cuda' || '' }} \
+      ${{ inputs.libceed && '--with-libceed' || '' }} \
+      ${{ inputs.gslib && '--with-gslib' || '' }} \
+      ${{ (!(inputs.mfem-branch == 'default') && format('--mfem-branch=''{0}''', inputs.mfem-branch)) || '' }}" >> $GITHUB_ENV
 
-        exclude:
-          # CUDA does not support MacOS
-          - os: macos-latest
-            cuda: true
+  # -------------------------------------------------------------------------------------------------
+  # Download/install dependencies
+  # -------------------------------------------------------------------------------------------------
+  - name: Install core dependencies via requirements.txt
+    run: pip install -r requirements.txt --verbose
 
-        include:
-          # Include a single example where the build is executed all at once
-          - os: ubuntu-latest
-            python-version: 3.9
-            mfem-branch: default
-            parallel: false
-            cuda: false
-            libceed: false
-            gslib: true
-            phases: false
+  - name: Install MPI
+    if: inputs.parallel
+    run: |
+      sudo apt-get install mpich libmpich-dev
+      pip install mpi4py
 
-    runs-on: ${{ matrix.os }}
+  - name: Cache CUDA
+    if: inputs.cuda
+    id: cache-cuda
+    uses: actions/cache@v4
+    with:
+      path: ~/cache
+      key: cuda-installer-${{ env.cuda-toolkit-version }}-${{ env.cuda-driver-version }}
 
-    # Reference for $${{ x && y || z }} syntax: https://7tonshark.com/posts/github-actions-ternary-operator/
-    name: >-
-      ${{ matrix.os }},
-      ${{ matrix.python-version }},
-      ${{ matrix.mfem-branch }},
-      (${{ matrix.parallel && 'parallel' || 'serial' }}${{ matrix.cuda && ' + cuda' || '' }}${{ matrix.libceed && ' + libceed' || '' }}${{ matrix.gslib && ' + gslib' || '' }})
+  - name: Download CUDA
+    if: inputs.cuda && steps.cache-cuda.outputs.cache-hit == false
+    run: |
+      CUDA_URL="https://developer.download.nvidia.com/compute/cuda/${{ env.cuda-toolkit-version }}/local_installers/cuda_${{ env.cuda-toolkit-version }}_${{ env.cuda-driver-version }}_linux.run"
+      curl -o ~/cache/cuda.run --create-dirs $CUDA_URL
 
-    env:
-      cuda-toolkit-version: '12.4.1'
-      cuda-driver-version: '550.54.15'
-      # These are all passed to setup.py as one concatenated string
-      build-flags: >-
-        ${{ matrix.parallel && '--with-parallel' || '' }}
-        ${{ matrix.cuda && '--with-cuda' || '' }}
-        ${{ matrix.libceed && '--with-libceed' || '' }}
-        ${{ matrix.gslib && '--with-gslib' || '' }}
-        ${{ (!(matrix.mfem-branch == 'default') && format('--mfem-branch=''{0}''', matrix.mfem-branch)) || '' }}
+  - name: Install CUDA
+    if: inputs.cuda
+    run: |
+      # The --silent flag is necessary to bypass user-input, e.g. accepting the EULA
+      sudo sh ~/cache/cuda.run --silent --toolkit
+      echo "/usr/local/cuda/bin" >> $GITHUB_PATH
 
-    # -------------------------------------------------------------------------------------------------
-    # Begin workflow
-    # -------------------------------------------------------------------------------------------------
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+  - name: Print dependency information
+    run: |
+      pip list
+      printf "\n\n---------- MPI ----------\n"
+      mpiexec --version || printf "MPI not installed"
+      printf "\n\n---------- CUDA ----------\n"
+      nvcc --version || printf "CUDA not installed"
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+  # -------------------------------------------------------------------------------------------------
+  # Build MFEM + SWIG Bindings + PyMFEM
+  # -------------------------------------------------------------------------------------------------
 
-    # -------------------------------------------------------------------------------------------------
-    # Download/install dependencies
-    # -------------------------------------------------------------------------------------------------
-    - name: Install core dependencies via requirements.txt
-      run: pip install -r requirements.txt --verbose
+  - name: Build MFEM (step 1)
+    if: inputs.phases
+    run: python setup.py install --ext-only --vv ${{ env.BUILD-FLAGS }}
 
-    - name: Install MPI
-      if: matrix.parallel
-      run: |
-        sudo apt-get install mpich libmpich-dev
-        pip install mpi4py
+  - name: Build SWIG wrappers (step 2)
+    if: inputs.phases
+    run: python setup.py install --swig --vv ${{ env.BUILD-FLAGS }}
 
-    - name: Cache CUDA
-      if: matrix.cuda
-      id: cache-cuda
-      uses: actions/cache@v4
-      with:
-        path: ~/cache
-        key: cuda-installer-${{ env.cuda-toolkit-version }}-${{ env.cuda-driver-version }}
+  - name: Build PyMFEM (step 3)
+    if: inputs.phases
+    run: python setup.py install --skip-ext --skip-swig --vv ${{ env.BUILD-FLAGS }}
 
-    - name: Download CUDA
-      if: matrix.cuda && steps.cache-cuda.outputs.cache-hit == false
-      run: |
-        CUDA_URL="https://developer.download.nvidia.com/compute/cuda/${{ env.cuda-toolkit-version }}/local_installers/cuda_${{ env.cuda-toolkit-version }}_${{ env.cuda-driver-version }}_linux.run"
-        curl -o ~/cache/cuda.run --create-dirs $CUDA_URL
+  - name: Build all (steps 1-3)
+    if: inputs.phases == false
+    run: python setup.py install --vv ${{ env.BUILD-FLAGS }}
 
-    - name: Install CUDA
-      if: matrix.cuda
-      run: |
-        # The --silent flag is necessary to bypass user-input, e.g. accepting the EULA
-        sudo sh ~/cache/cuda.run --silent --toolkit
-        echo "/usr/local/cuda/bin" >> $GITHUB_PATH
+  # -------------------------------------------------------------------------------------------------
+  # Run tests
+  # -------------------------------------------------------------------------------------------------
+  - name: Run tests (serial)
+    if: inputs.parallel == false
+    run: |
+      cd test
+      python run_examples.py -serial -verbose
 
-    - name: Print dependency information
-      run: |
-        pip list
-        printf "\n\n---------- MPI ----------\n"
-        mpiexec --version || printf "MPI not installed"
-        printf "\n\n---------- CUDA ----------\n"
-        nvcc --version || printf "CUDA not installed"
+  - name: Run tests (parallel)
+    if: inputs.parallel
+    run: |
+      cd test
+      python run_examples.py -parallel -verbose -np 2
 
-    # -------------------------------------------------------------------------------------------------
-    # Build MFEM + SWIG Bindings + PyMFEM
-    # -------------------------------------------------------------------------------------------------
-    - name: Build MFEM (step 1)
-      if: matrix.phases
-      run: python setup.py install --ext-only --vv ${{ env.build-flags }}
+  # -------------------------------------------------------------------------------------------------
+  # Generate an artifact (output of tests) on failure
+  # -------------------------------------------------------------------------------------------------
+  - name: Generate test results artifact
+    id: generate-artifact
+    run: |
+      tar -cvzf sandbox.tar.gz test/sandbox
+      # generate a name for the artifact
+      txt=$(python -c "import datetime;print(datetime.datetime.now().strftime('%H_%M_%S_%f'))")
+      echo name="test_results_"${txt}"_"${{ github.run_id }}".tar.gz" >> $GITHUB_OUTPUT
 
-    - name: Build SWIG wrappers (step 2)
-      if: matrix.phases
-      run: python setup.py install --swig --vv ${{ env.build-flags }}
-
-    - name: Build PyMFEM (step 3)
-      if: matrix.phases
-      run: python setup.py install --skip-ext --skip-swig --vv ${{ env.build-flags }}
-
-    - name: Build all (steps 1-3)
-      if: matrix.phases == false
-      run: python setup.py install --vv ${{ env.build-flags }}
-
-    # -------------------------------------------------------------------------------------------------
-    # Run tests
-    # -------------------------------------------------------------------------------------------------
-    - name: Run tests (serial)
-      if: matrix.parallel == false
-      run: |
-        cd test
-        python run_examples.py -serial -verbose
-
-    - name: Run tests (parallel)
-      if: matrix.parallel
-      run: |
-        cd test
-        python run_examples.py -parallel -verbose -np 2
-
-    # -------------------------------------------------------------------------------------------------
-    # Generate an artifact (output of tests) on failure
-    # -------------------------------------------------------------------------------------------------
-    - name: Generate test results artifact
-      id: generate-artifact
-      run: |
-        tar -cvzf sandbox.tar.gz test/sandbox
-        # generate a name for the artifact
-        txt=$(python -c "import datetime;print(datetime.datetime.now().strftime('%H_%M_%S_%f'))")
-        echo name="test_results_"${txt}"_"${{ github.run_id }}".tar.gz" >> $GITHUB_OUTPUT
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-          name: ${{ steps.generate-artifact.outputs.name }}
-          path: sandbox.tar.gz
-          retention-days: 1
+  - name: Upload Artifact
+    uses: actions/upload-artifact@v4
+    if: failure()
+    with:
+        name: ${{ steps.generate-artifact.outputs.name }}
+        path: sandbox.tar.gz
+        retention-days: 1
