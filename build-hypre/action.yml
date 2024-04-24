@@ -30,6 +30,10 @@ inputs:
     description: 'identify the build system to use (make,cmake)'
     required: false
     default: make
+  precision:
+    description: 'Precision of the floating point type (sgl,dbl)'
+    required: false
+    default: dbl
 
 runs:
   using: "composite"
@@ -65,6 +69,16 @@ runs:
           echo "Hypre target not recognized";
           exit 1;
         fi
+        if [[ "${{ inputs.precision }}" == "dbl" ]]
+        then
+          :;
+        elif [[ "${{ inputs.target }}" == "sgl" ]]
+        then
+          export hypre_options="${hypre_options} --enable-single";
+        else
+          echo "Hypre precision not recognized";
+          exit 1;
+        fi
         echo "Installing Hypre"
         cd ${{ inputs.dir }};
         install_prefix="$(pwd)/install";
@@ -87,6 +101,16 @@ runs:
           export hypre_options="-DHYPRE_ENABLE_BIGINT=ON";
         else
           echo "Hypre target not recognized";
+          exit 1;
+        fi
+        if [[ "${{ inputs.precision }}" == "dbl" ]]
+        then
+          :;
+        elif [[ "${{ inputs.target }}" == "sgl" ]]
+        then
+          export hypre_options="${hypre_options} -DHYPRE_ENABLE_SINGLE=ON";
+        else
+          echo "Hypre precision not recognized";
           exit 1;
         fi
         echo "Installing Hypre"
