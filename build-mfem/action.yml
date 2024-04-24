@@ -48,6 +48,10 @@ inputs:
     description: 'identify the build system to use (make,cmake)'
     required: false
     default: make
+  precision:
+    description: 'Precision of the floating point type (sgl,dbl)'
+    required: false
+    default: dbl
   library-only:
     description: 'only build the mfem library, without examples/tests/miniapps'
     required: false
@@ -112,6 +116,11 @@ runs:
           CPPFLAGS+=" --coverage -fPIC -g";
         fi
         echo "[STATUS] CPPFLAGS: ${CPPFLAGS}"
+        PRECISION="DOUBLE"
+        if [[ ${{ inputs.precision }} == 'sgl' ]]; then
+          PRECISION="SINGLE";
+        fi
+        echo "[STATUS] PRECISION: ${PRECISION}"
         echo "----------------------"
         echo "--- Configure mfem ---"
         cd ${{ inputs.mfem-dir }};
@@ -132,6 +141,7 @@ runs:
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
               -D HYPRE_DIR=../../hypre/install \
+              -D MFEM_PRECISION=${PRECISION} \
               ${USE_MPI_WRAPPER} \
               ${{ inputs.config-options }} \
               ..
@@ -142,6 +152,7 @@ runs:
               MFEM_DEBUG=${DEBUG} \
               CPPFLAGS="${CPPFLAGS}" \
               HYPRE_DIR=@MFEM_DIR@/../hypre/install \
+              MFEM_PRECISION=${PRECISION} \
               ${{ inputs.config-options }}
         fi
       shell: bash
