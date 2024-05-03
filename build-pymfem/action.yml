@@ -14,10 +14,10 @@
 # This action intentionally does *not* incorporate other workflow actions such as `build-mfem`.
 # PyMFEM's build process is a superset of MFEM's build process, and we want to ensure that PyMFEM
 # is able to correctly build MFEM.
-#  - Builds PyMFEM in three stages:
-#    - MFEM dependencies + MFEM
-#    - SWIG bindings
-#    - PyMFEM
+# This action builds PyMFEM in three stages:
+#   - MFEM dependencies + MFEM
+#   - SWIG bindings
+#   - PyMFEM
 
 name: build-pymfem
 
