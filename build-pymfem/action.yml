@@ -23,7 +23,7 @@ name: build-pymfem
 
 inputs:
   os:
-    description: 'os'
+    description: 'Operating system'
     default: 'ubuntu-latest'
     enum: ['ubuntu-latest', 'macos-latest']
   python-version:
@@ -50,9 +50,8 @@ inputs:
   gslib:
     description: 'Build with GSlib'
     default: false
-  # When phases==true, run each individual build step explicitly: mfem -> swig -> pymfem
   phases:
-    description: 'Run build in phases'
+    description: 'When true, run each build step individually (mfem, swig, pymfem)'
     default: true
 
 
