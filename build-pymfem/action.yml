@@ -83,8 +83,10 @@ runs:
   # -------------------------------------------------------------------------------------------------
   # Setup base environment
   # -------------------------------------------------------------------------------------------------
-  - name: Checkout repo
+  - name: Checkout the PyMFEM repo
     uses: actions/checkout@v4
+    with:
+      repository: 'mfem/PyMFEM'
     shell: bash
 
   - name: Set up Python ${{ inputs.python-version }}
