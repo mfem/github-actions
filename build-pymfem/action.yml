@@ -59,7 +59,7 @@ runs:
   using: "composite"
   steps:
   # -------------------------------------------------------------------------------------------------
-  # Setup / config
+  # Config
   # -------------------------------------------------------------------------------------------------
   - name: Validate inputs
     run: |
@@ -69,6 +69,20 @@ runs:
       fi
     shell: bash
 
+  # Reference for $${{ x && y || z }} syntax: https://7tonshark.com/posts/github-actions-ternary-operator/
+  # These are all passed to setup.py as one concatenated string
+  - name: Set build flags
+    run: |
+      echo "BUILD_FLAGS=${{ inputs.parallel && '--with-parallel' || '' }} \
+      ${{ inputs.cuda && '--with-cuda' || '' }} \
+      ${{ inputs.libceed && '--with-libceed' || '' }} \
+      ${{ inputs.gslib && '--with-gslib' || '' }} \
+      ${{ (!(inputs.mfem-branch == 'default') && format('--mfem-branch=''{0}''', inputs.mfem-branch)) || '' }}" >> $GITHUB_ENV
+    shell: bash
+
+  # -------------------------------------------------------------------------------------------------
+  # Setup base environment
+  # -------------------------------------------------------------------------------------------------
   - name: Checkout repo
     uses: actions/checkout@v4
     shell: bash
@@ -77,17 +91,6 @@ runs:
     uses: actions/setup-python@v5
     with:
       python-version: ${{ inputs.python-version }}
-    shell: bash
-
-  # Reference for $${{ x && y || z }} syntax: https://7tonshark.com/posts/github-actions-ternary-operator/
-  - name: Set build flags
-    # These are all passed to setup.py as one concatenated string
-    run: |
-      echo "BUILD_FLAGS=${{ inputs.parallel && '--with-parallel' || '' }} \
-      ${{ inputs.cuda && '--with-cuda' || '' }} \
-      ${{ inputs.libceed && '--with-libceed' || '' }} \
-      ${{ inputs.gslib && '--with-gslib' || '' }} \
-      ${{ (!(inputs.mfem-branch == 'default') && format('--mfem-branch=''{0}''', inputs.mfem-branch)) || '' }}" >> $GITHUB_ENV
     shell: bash
 
   # -------------------------------------------------------------------------------------------------
