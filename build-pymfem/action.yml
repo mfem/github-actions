@@ -87,13 +87,11 @@ runs:
     uses: actions/checkout@v4
     with:
       repository: 'mfem/PyMFEM'
-    shell: bash
 
   - name: Set up Python ${{ inputs.python-version }}
     uses: actions/setup-python@v5
     with:
       python-version: ${{ inputs.python-version }}
-    shell: bash
 
   # -------------------------------------------------------------------------------------------------
   # Download/install dependencies
@@ -116,7 +114,6 @@ runs:
     with:
       path: ~/cache
       key: cuda-installer-${{ env.cuda-toolkit-version }}-${{ env.cuda-driver-version }}
-    shell: bash
 
   - name: Download CUDA
     if: inputs.cuda && steps.cache-cuda.outputs.cache-hit == false
@@ -202,4 +199,3 @@ runs:
         name: ${{ steps.generate-artifact.outputs.name }}
         path: sandbox.tar.gz
         retention-days: 1
-    shell: bash
