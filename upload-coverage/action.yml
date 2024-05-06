@@ -30,20 +30,29 @@ runs:
     - run: |
         cd ${{ inputs.project_dir }}
         # Restrict search to directories listed, if any.
-        directory_list="${{ inputs.directories }}";
-        dirs_opts="";
+        directory_list="${{ inputs.directories }}"
+        dirs_opts=""
         if [[ -n "${directory_list}" ]]; then
           for dir in ${directory_list}; do dirs_opts+=" --directory=${dir}"; done
         fi
+        keep_going_flag=""
+        if [[ "$(lcov --version)" =~ "lcov: LCOV version 2" ]]; then
+          keep_going_flag="--keep-going"
+        fi
         # Generate the coverage report.
-        lcov --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file lcov.info;
+        lcov ${keep_going_flag} --no-external --gcov-tool gcov ${dirs_opts} --capture --output-file lcov.info
         # The variable $RUNNER_OS should be either "Linux" or "macOS"
         os_lowercase=$(echo $RUNNER_OS | awk '{print tolower($0)}')
         # The prefix will end with "linux" or "macos" depending on the runner OS
         prefix="https://uploader.codecov.io/latest/$os_lowercase"
         curl -Os "$prefix/codecov"
+        # Workaround for GPG issue: need to create the GNUPGHOME (with proper
+        # permissions) otherwise the trustedkeys file is not created.
+        export GNUPGHOME="$HOME/gnupg"
+        mkdir "$GNUPGHOME"
+        chmod 700 "$GNUPGHOME"
         # Check integrity of the binary uploader (cf. https://docs.codecov.com/docs/codecov-uploader#integrity-checking-the-uploader)
-        curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import # One-time step
+        curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.kbx --import # One-time step
         curl -Os "$prefix/codecov.SHA256SUM"
         curl -Os "$prefix/codecov.SHA256SUM.sig"
         gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
