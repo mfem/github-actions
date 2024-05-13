@@ -49,9 +49,9 @@ inputs:
     required: false
     default: make
   precision:
-    description: 'Precision of the floating point type (sgl,dbl)'
+    description: 'Precision of the floating point type (fp32,fp64)'
     required: false
-    default: dbl
+    default: fp64
   library-only:
     description: 'only build the mfem library, without examples/tests/miniapps'
     required: false
@@ -117,7 +117,7 @@ runs:
         fi
         echo "[STATUS] CPPFLAGS: ${CPPFLAGS}"
         PRECISION="DOUBLE"
-        if [[ ${{ inputs.precision }} == 'sgl' ]]; then
+        if [[ ${{ inputs.precision }} == 'fp32' ]]; then
           PRECISION="SINGLE";
         fi
         echo "[STATUS] PRECISION: ${PRECISION}"

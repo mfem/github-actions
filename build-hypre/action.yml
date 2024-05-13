@@ -31,9 +31,9 @@ inputs:
     required: false
     default: make
   precision:
-    description: 'Precision of the floating point type (sgl,dbl)'
+    description: 'Precision of the floating point type (fp32,fp64)'
     required: false
-    default: dbl
+    default: fp64
 
 runs:
   using: "composite"
@@ -69,10 +69,10 @@ runs:
           echo "Hypre target not recognized";
           exit 1;
         fi
-        if [[ "${{ inputs.precision }}" == "dbl" ]]
+        if [[ "${{ inputs.precision }}" == "fp64" ]]
         then
           :;
-        elif [[ "${{ inputs.precision }}" == "sgl" ]]
+        elif [[ "${{ inputs.precision }}" == "fp32" ]]
         then
           export hypre_options="${hypre_options} --enable-single";
         else
@@ -103,10 +103,10 @@ runs:
           echo "Hypre target not recognized";
           exit 1;
         fi
-        if [[ "${{ inputs.precision }}" == "dbl" ]]
+        if [[ "${{ inputs.precision }}" == "fp64" ]]
         then
           :;
-        elif [[ "${{ inputs.precision }}" == "sgl" ]]
+        elif [[ "${{ inputs.precision }}" == "fp32" ]]
         then
           export hypre_options="${hypre_options} -DHYPRE_ENABLE_SINGLE=ON";
         else
