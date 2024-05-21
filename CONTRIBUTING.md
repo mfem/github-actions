@@ -65,3 +65,6 @@ Because this involves making changes in multiple repos, each step will be marked
 In summary:
 Please try to use branches for development and tags for production.
 
+## Tips
+
+- When adding a new input to an action, you may want to also add a new dimension to the job matrix for workflows that use that action. If you are adding a dimension to a job matrix, the job name may also need to be modified as job names must be unique.
