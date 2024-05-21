@@ -38,7 +38,7 @@ Because this involves making changes in multiple repos, each step will be marked
 > - uses: mfem/github-actions/build-mfem@v2.4
 > + uses: mfem/github-actions/build-mfem@add-single-precision-ci
 > ```
-4. `project` To test the updated workflow, create a pull request and tag it with `DO-NOT-MERGE`; this will trigger the CI to run with your new changes
+4. `project` To test the updated workflow, create a pull request and label it with `DO-NOT-MERGE`; this will trigger the CI to run with your new changes
 
 > **Note**
 >
@@ -59,7 +59,7 @@ Because this involves making changes in multiple repos, each step will be marked
 > - uses: mfem/github-actions/build-mfem@add-single-precision-ci
 > + uses: mfem/github-actions/build-mfem@v2.5
 > ```
-9. `project` Submit a PR with your updated `{ref}`
+9. `project` Remove the `DO-NOT-MERGE` label from your PR and complete the merge.
 10. Celebrate! 🕺💃🎉
 
 In summary:
