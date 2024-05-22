@@ -53,17 +53,23 @@ Because this involves making changes in multiple repos, each step will be marked
 
 6. `actions` Once your changes are finalized, submit a PR to pull your branch into `master`
 7. `actions` *Tag* the merged commit with a new [version number](https://semver.org/) `vX.Y`
-8. `project` Update the `{ref}` in your actions to point to the new version number, e.g.
+
+8. `project` Update the `{ref}` in your actions to point to the new tag (version number), e.g.
 > `mfem/.github/workflows/build-and-tests.yml`
 > ```diff
 > - uses: mfem/github-actions/build-mfem@add-single-precision-ci
 > + uses: mfem/github-actions/build-mfem@v2.5
 > ```
-9. `project` Remove the `DO-NOT-MERGE` label from your PR and complete the merge.
-10. Celebrate! 🕺💃🎉
 
-In summary:
-Please try to use branches for development and tags for production.
+> **Note**
+>
+> These guidelines recommend setting `{ref}` to your **branch** during development - as they are a moving target and make it easier to rapidly test each new commit.
+> However, once changes are finalized `{ref}` points to a **tag** for stability. 
+
+9. `project` Remove the `DO-NOT-MERGE` label from your PR and complete the merge.
+10. `project` If job names have changed, contact a [MFEM Editor](https://github.com/orgs/mfem/teams/editors) to ensure that the correct names are used in the [required tests](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks). ([Example](https://github.com/mfem/mfem/pull/4262#issuecomment-2118986510))
+11. Celebrate! 🕺💃🎉
+
 
 ## Tips
 
