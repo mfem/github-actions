@@ -19,8 +19,8 @@ For example:
 uses: mfem/github-actions/build-hypre@v2.4
 ```
 `{ref}` can be *any* of the following:
-- branch
-- tag
+- branch (recommended for development)
+- tag (recommended for final version)
 - commit hash
 
 ## Guidelines
@@ -51,8 +51,10 @@ Because this involves making changes in multiple repos, each step will be marked
 
 5. `actions` Continue to develop and test your action; because the `{ref}` in your `project` workflow is pointing to your branch, re-running the `project` CI will always point to the latest commit.
 
-6. `actions` Once your changes are finalized, submit a PR to pull your branch into `master`
-7. `actions` *Tag* the merged commit with a new [version number](https://semver.org/) `vX.Y`
+6. `actions` Once your changes are finalized
+    - Update `CHANGELOG.md` to reflect your changes, using an appropriate updated [version number](https://semver.org/)
+    - Submit a PR to pull your branch into `master`
+    - Once the PR is merged, *tag* the merged commit with the new version number
 
 8. `project` Update the `{ref}` in your actions to point to the new tag (version number), e.g.
 > `mfem/.github/workflows/build-and-tests.yml`
