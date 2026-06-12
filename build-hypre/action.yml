@@ -94,7 +94,11 @@ runs:
         cd ${{ inputs.dir }};
         install_prefix="$(pwd)/install";
         cd src;
-        ./configure --prefix=${install_prefix} ${hypre_options} CC=mpicc CXX=mpic++;
+        ./configure --prefix=${install_prefix} ${hypre_options} CC=mpicc CXX=mpic++ || {
+          echo "Hypre configuration failed. Contents of 'config.log':"
+          [[ -e config.log ]] && cat config.log
+          exit 1
+        }
         make -j ${ntasks};
         make install;
         cd ../..;
