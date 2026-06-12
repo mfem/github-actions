@@ -23,7 +23,7 @@ inputs:
     description: 'Metis top directory name'
     required: true
   num-tasks:
-    description: 'number of tasks to use for building: auto, or 1, 2, ...'
+    description: 'Number of tasks to use for building: auto, or 1, 2, ...'
     required: false
     default: 'auto'
 
