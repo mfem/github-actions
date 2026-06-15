@@ -10,6 +10,7 @@
 # CONTRIBUTING.md for details.
 
 name: build-hypre
+description: Action to download and build Hypre
 
 inputs:
   url:

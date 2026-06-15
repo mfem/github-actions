@@ -10,6 +10,7 @@
 # CONTRIBUTING.md for details.
 
 name: build-metis
+description: Action to download and build METIS
 
 inputs:
   url:

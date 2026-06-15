@@ -10,6 +10,7 @@
 # CONTRIBUTING.md for details.
 
 name: build-mfem
+description: Action to build MFEM
 
 inputs:
   os:
