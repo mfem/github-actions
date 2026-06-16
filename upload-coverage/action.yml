@@ -20,7 +20,7 @@ inputs:
     description: "Path to the project directory"
     required: true
   directories:
-    descripton: "List of directories to look for coverage info"
+    description: "List of directories to look for coverage info"
     required: false
 
 runs:

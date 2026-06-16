@@ -10,6 +10,7 @@
 # CONTRIBUTING.md for details.
 
 name: build-metis
+description: Action to download and build METIS
 
 inputs:
   url:
@@ -22,6 +23,10 @@ inputs:
   dir:
     description: 'Metis top directory name'
     required: true
+  num-tasks:
+    description: 'Number of tasks to use for building: auto, or 1, 2, ...'
+    required: false
+    default: 'auto'
 
 runs:
   using: "composite"
@@ -31,5 +36,12 @@ runs:
         wget --no-verbose ${{ inputs.url }}/${{ inputs.archive }};
         rm -rf ${{ inputs.dir }};
         tar -xzf ${{ inputs.archive }};
-        make -j3 -C ${{ inputs.dir }}/Lib CC=mpicc OPTFLAGS="-Wno-error=implicit-function-declaration -O2";
+        ntasks="${{ inputs.num-tasks }}"
+        if [[ "${ntasks}" -ge 1 ]]; then
+          echo "[STATUS] Number of tasks: ${ntasks}"
+        else
+          ntasks=$({ nproc || getconf _NPROCESSORS_ONLN; } 2> /dev/null)
+          echo "[STATUS] Number of tasks: auto: ${ntasks}"
+        fi
+        make -j ${ntasks} -C ${{ inputs.dir }}/Lib CC=mpicc OPTFLAGS="-Wno-error=implicit-function-declaration -O2";
       shell: bash
