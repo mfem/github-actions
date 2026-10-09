@@ -133,6 +133,12 @@ runs:
             if [[ ${{ runner.os }} == "Windows" ]]; then
               toolchain_file="${VCPKG_INSTALLATION_ROOT}\\scripts\\buildsystems\\vcpkg.cmake"
               vcpkg_triplet="x64-windows-static"
+              # Disable applocal to avoid sporadic "file in use" CI failures
+              # (exit code 32) when vcpkg post-processes executables during
+              # parallel builds. This is safe because vcpkg only provides
+              # static libraries here, so there are no vcpkg DLLs to copy next
+              # to executables.
+              vcpkg_applocal_deps="OFF"
             fi
             # Use the MPI wrapper on Ubuntu (at least on v22.04) to avoid slow
             # linking times due to LTO compile flags.
@@ -142,6 +148,7 @@ runs:
             cmake \
               -D CMAKE_TOOLCHAIN_FILE:STRING=${toolchain_file} \
               -D VCPKG_TARGET_TRIPLET=${vcpkg_triplet} \
+              -D VCPKG_APPLOCAL_DEPS=${vcpkg_applocal_deps} \
               -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
               -D MFEM_USE_MPI=${MPI} \
               -D MFEM_MPI_NP=2 \
