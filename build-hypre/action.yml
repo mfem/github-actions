@@ -95,6 +95,10 @@ runs:
         cd ${{ inputs.dir }};
         install_prefix="$(pwd)/install";
         cd src;
+        # Pin the version of C/C++ standard to avoid problems with C23 native
+        # bool type definition
+        export CFLAGS="${CFLAGS} -std=c17"
+        export CXXFLAGS="${CXXFLAGS} -std=c++17"
         ./configure --prefix=${install_prefix} ${hypre_options} CC=mpicc CXX=mpic++ || {
           echo "Hypre configuration failed. Contents of 'config.log':"
           cat config.log
@@ -141,6 +145,8 @@ runs:
         cmake -Hsrc -Bbuild \
           ${hypre_options} \
           -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_STANDARD=17 \
+          -DCMAKE_CXX_STANDARD=17 \
           -DCMAKE_INSTALL_PREFIX=install
         cmake --build build --config Release --parallel ${ntasks}
         cmake --install build --config Release
