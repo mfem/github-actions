@@ -95,7 +95,8 @@ runs:
         cd ${{ inputs.dir }};
         install_prefix="$(pwd)/install";
         cd src;
-        export CFLAGS="${CFLAGS} -Ubool"
+        export CFLAGS="${CFLAGS} -std=c17"
+        export CXXFLAGS="${CXXFLAGS} -std=c++17"
         ./configure --prefix=${install_prefix} ${hypre_options} CC=mpicc CXX=mpic++ || {
           echo "Hypre configuration failed. Contents of 'config.log':"
           cat config.log
